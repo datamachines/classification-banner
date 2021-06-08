@@ -51,3 +51,4 @@ def hint_X11(window, top=0, bottom=0):
   except:
     print("Not running X11, not going to be able to use strut partial")
   return None
+  
