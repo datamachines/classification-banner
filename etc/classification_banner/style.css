@@ -2,28 +2,28 @@ label {
   margin: 0 10px;
 }
 
-.unclass {
+.green {
   background-image: none;
-  background-color: rgba(0, 204, 0, 1);
+  background-color: #00cc00;
   color: #000000;
 }
 
-.secret {
+.red {
   background-color: #c8102e;
   color: #ffffff;
 }
 
-.ts {
+.orange {
   background-color: #ff671f;
   color: #000000;
 }
 
-.tssci {
+.yellow {
   background-color: #f7ea48;
   color: #000000;
 }
 
-.sapsar {
+.purple {
   background-color: #3c009c;
   color: #ffffff;
 }

@@ -1,4 +1,22 @@
 banners:
   - top
   - bottom
-classification: unclass
+system:
+  classification: unclass
+
+classifications:
+  unclass:
+    label: UNCLASSIFIED
+    style: green
+  secret:
+    label: SECRET
+    style: red
+  secretnoforn:
+    label: SECRET//NOFORN
+    style: red
+  ts:
+    label: TOP SECRET
+    style: orange
+  tssci:
+    label: TOP SECRET//SCI
+    style: yellow   

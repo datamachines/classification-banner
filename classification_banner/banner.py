@@ -1,8 +1,9 @@
-import classification_banner.utils.classification as utils_classification
-import classification_banner.utils.display        as utils_display
-import classification_banner.utils.system         as utils_system
-
+import os
 import pkg_resources
+import platform
+
+import classification_banner.utils.config         as utils_config
+import classification_banner.utils.display        as utils_display
 
 # GTK and GDK 
 import gi
@@ -11,20 +12,30 @@ gi.require_version("Gdk", "3.0")
 from gi.repository import Gtk, Gdk
 
 
+def get_user():
+  """Helper to get logged in username"""
+  try:
+      user = os.getlogin()
+  except:
+      user = 'UnknownUser'
+  return user
+
+def get_hostname():
+  """Helper to get hostname"""
+  return platform.node()
+
+
 class ClassificationBanner:
-  def __init__(self, classification="unclass", location="top", banner_height=25):
+  def __init__(self, classification=utils_config.get_system_classification(), location="top", banner_height=25):
     """Set up and display the main window """
 
     # Get and save the workable area of the manager supports it.
     work_area = utils_display.get_workable_area()
 
-    # Normalize the classification string
-    classification = utils_classification.normalize(classification)
-
     # Prepare to use our stylesheet
     style_provider = Gtk.CssProvider()
-    style_name = 'style.css'
-    style_path = pkg_resources.resource_filename(__name__, style_name)
+    style_filename = 'style.css'
+    style_path = "/etc/classification_banner/%s".format(style_filename)
     style_provider.load_from_path(style_path)
     Gtk.StyleContext.add_provider_for_screen(
       Gdk.Screen.get_default(),
@@ -33,7 +44,7 @@ class ClassificationBanner:
     )
 
     # Set our current classficiation style class
-    style_class = utils_classification.get_style_class(classification)
+    style_class = utils_config.get_classification_style_name(classification)
 
     # Get some screen information and save it off
     screen_size = utils_display.get_screen_size()
@@ -57,17 +68,17 @@ class ClassificationBanner:
     hbox.get_style_context().add_class(style_class)
 
     # User label
-    label_user = Gtk.Label(label=utils_system.get_user())
+    label_user = Gtk.Label(label=get_user())
     label_user.get_style_context().add_class(style_class)
     label_user.set_halign(Gtk.Align.START)
 
     # Classification label
-    label_classification = Gtk.Label(label="FAKE: " + utils_classification.format_classification_message(classification))
+    label_classification = Gtk.Label(label=utils_config.get_classification_label(classification))
     label_classification.get_style_context().add_class(style_class)
     label_classification.set_halign(Gtk.Align.CENTER)
 
     # Hostname label
-    label_hostname = Gtk.Label(label=utils_system.get_hostname())
+    label_hostname = Gtk.Label(label=get_hostname())
     label_hostname.get_style_context().add_class(style_class)
     label_hostname.set_halign(Gtk.Align.END)
 
@@ -82,9 +93,8 @@ class ClassificationBanner:
     # Show window and attach its life to Gtk
     self.window.show_all()
     self.window.connect("destroy", Gtk.main_quit)
-
-    # Throw a hit at X11 to make room for static elements that need to cut down on workspace
     if location.lower() == "top":
+      # Throw a hit at X11 to make room for static elements that need to cut down on workspace
       utils_display.hint_X11(
         window=self.window,
         top=(work_area['y'] + banner_height)
@@ -92,6 +102,7 @@ class ClassificationBanner:
       # Move window into place
       self.window.move(0, work_area['y'])
     elif location.lower() == "bottom":
+      # Throw a hit at X11 to make room for static elements that need to cut down on workspace
       utils_display.hint_X11(
         window=self.window,
         bottom=banner_height
@@ -101,6 +112,10 @@ class ClassificationBanner:
     
 
 def main():
+  if utils_display.detect_window_system() != "x11":
+    print("You must be running X11 for this utility to work.")
+    exit(1)
+
   ClassificationBanner(location="top")
   ClassificationBanner(location="bottom")
 
