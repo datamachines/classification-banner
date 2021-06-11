@@ -9,6 +9,6 @@ setup(name='classification-banner',
       author_email='mikemay@datamachines.io',
       url='https://www.github.com/datamachines/classification-banner',
       packages=find_packages(),
-      scripts=["bin/classification_banner"],
-      data_files=[("classification_banner", ["style.css"])]
+      scripts=["bin/classification-banner"],
+      data_files=[("classification-banner", ["style.css"])]
      )
