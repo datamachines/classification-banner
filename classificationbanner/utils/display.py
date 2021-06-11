@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger("classificationbanner")
+
 import os
 
 import gi

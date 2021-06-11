@@ -1,9 +1,19 @@
+import logging
+from logging.handlers import SysLogHandler
+logger = logging.getLogger("classificationbanner")
+handler = SysLogHandler(facility=SysLogHandler.LOG_DAEMON, address='/dev/log')
+logger.addHandler(handler)
+
+formatter = logging.Formatter('classification-banner[%(process)d] (%(module)s.%(funcName)s) %(levelname)s: %(message)s')
+handler.setFormatter(formatter)
+
+logger.setLevel(logging.DEBUG)
+
 import os
-import pkg_resources
 import platform
 
-import classification_banner.utils.config         as utils_config
-import classification_banner.utils.display        as utils_display
+import classificationbanner.utils.config  as utils_config
+import classificationbanner.utils.display as utils_display
 
 # GTK and GDK 
 import gi
@@ -26,8 +36,24 @@ def get_hostname():
 
 
 class ClassificationBanner:
-  def __init__(self, classification=utils_config.get_system_classification(), location="top", banner_height=25):
-    """Set up and display the main window """
+  def __init__(self, config=None, classification=None, location="top", banner_height=25):
+    """Set up and display the banner's main window """
+
+    # Check we have some sort of configuration
+    if config is None:
+      # Try to load it from the file system
+      try:
+        config = utils_config.open_config()
+      except:
+        exit(1)
+
+    # Check that the classification is set
+    if classification is None:
+      # Try to load it from the configuration file
+      try:
+        classification = utils_config.get_system_classification(config)
+      except:
+        exit(1)
 
     # Get and save the workable area of the manager supports it.
     work_area = utils_display.get_workable_area()
@@ -35,7 +61,7 @@ class ClassificationBanner:
     # Prepare to use our stylesheet
     style_provider = Gtk.CssProvider()
     style_filename = 'style.css'
-    style_path = "/etc/classification_banner/%s".format(style_filename)
+    style_path = "/etc/classification-banner/{}".format(style_filename)
     style_provider.load_from_path(style_path)
     Gtk.StyleContext.add_provider_for_screen(
       Gdk.Screen.get_default(),
@@ -44,7 +70,10 @@ class ClassificationBanner:
     )
 
     # Set our current classficiation style class
-    style_class = utils_config.get_classification_style_name(classification)
+    style_class = utils_config.get_classification_style_name(config, classification)
+    # Die if no class is configured
+    if style_class is None:
+      exit(1)
 
     # Get some screen information and save it off
     screen_size = utils_display.get_screen_size()
@@ -73,7 +102,7 @@ class ClassificationBanner:
     label_user.set_halign(Gtk.Align.START)
 
     # Classification label
-    label_classification = Gtk.Label(label=utils_config.get_classification_label(classification))
+    label_classification = Gtk.Label(label=utils_config.get_classification_label(config, classification))
     label_classification.get_style_context().add_class(style_class)
     label_classification.set_halign(Gtk.Align.CENTER)
 
@@ -109,17 +138,24 @@ class ClassificationBanner:
       )
       # Move window into place
       self.window.move(0, work_area['height']+2)
+  
+    logger.info("Classification {} banner loaded".format(location))
     
 
 def main():
   if utils_display.detect_window_system() != "x11":
-    print("You must be running X11 for this utility to work.")
+    logger.critical("You must be running X11 for this utility to work.")
+    exit(1)
+  
+  try:
+    config = utils_config.open_config()
+  except:
     exit(1)
 
-  ClassificationBanner(location="top")
-  ClassificationBanner(location="bottom")
+  ClassificationBanner(config=config, location="top")
+  ClassificationBanner(config=config, location="bottom")
 
   Gtk.main()
 
 if __name__ == "__main__":
-    main()
+  main()
