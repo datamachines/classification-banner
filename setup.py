@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name='classification-banner',
-      version='1.0',
+      version='0.9.0',
       description='Classification banner compatable with GTK3 and X11.',
       author='Mike May',
       author_email='mikemay@datamachines.io',
