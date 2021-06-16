@@ -1,0 +1,12 @@
+[Desktop Entry]
+Name=Classification Banner
+Exec=env GDK_BACKEND=x11 /usr/local/bin/classification-banner
+Comment=Classification banner of current security stance of system.
+Type=Application
+Encoding=UTF-8
+Version=1.0.0
+MimeType=application/python;
+Categories=Utility;
+X-GNOME-Autostart-enabled=true
+StartupNotify=false
+Terminal=false
